@@ -1200,7 +1200,7 @@ info_item() {
     get_old_name OLDPKG $APP
 
     CATEGORY=$(< $SBOPKGTMP/sbopkg_category_selection)
-    SHORTPATH=$REPO_DIR/$CATEGORY/$APP
+    SHORTPATH=$REPO_DIR/$CATEGORY/$APP/*/src/
     CURVERSION=$(grep VERSION $SHORTPATH/$APP.info |
         cut -d= -f2 | sed s/\"//g)
     eval CUR$(grep -m1 ^ARCH= $SHORTPATH/$APP.SlackBuild) 2>/dev/null
@@ -2463,7 +2463,7 @@ search_package() {
 
     cd $REPO_DIR
     PKG="$1"
-    PKGPATH=( $(find -type d -mindepth 2 -maxdepth 2 -name "$PKG" | sort) )
+    PKGPATH=( $(find -type d -mindepth 2 -maxdepth 2 -name "$PKG" | sort)/*/src )
 
     if [[ -z $PKGPATH ]]; then
         return 1
@@ -4445,7 +4445,7 @@ unset HAS_NCURSES     # Set if the ncurses package is installed
 unset REPOS_FIELDS    # Number of fields for each repository entry
 unset REPO_NAME       # Currently active repository (e.g. SBo)
 unset REPO_BRANCH     # Currently active branch (e.g. 13.0)
-unset REPO_DESC       # Active branch's description
+unset REPO_DESC       # Active brepos.dranch's description
 unset REPO_TAG        # Active branch's packages' tag
 unset REPO_TOOL       # Active branch's fetch tool
 unset REPO_LINK       # Active branch's fetch link
