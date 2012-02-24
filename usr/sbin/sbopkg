@@ -205,7 +205,7 @@ load_repositories() {
             # Sanity checks
             # these two assignments work around a bash3-4 incompatibility
             local GPG='^GPG$|^$'
-            local RSYNC='^rsync$|^git$|^$'
+            local RSYNC='^lftp$|^rsync$|^git$|^$'
             [[ ! ${TMPARRAY[6]} =~ $GPG ]] && ERROR="gpg"
             [[ ! ${TMPARRAY[4]} =~ $RSYNC ]] && ERROR="tool"
             [[ ${#TMPARRAY[@]} -ne $REPOS_FIELDS ]] && ERROR="fields"
@@ -986,6 +986,15 @@ checkout_rsync_branch() {
     REPO_DIR=$REPO_DIR/$REPO_BRANCH
 }
 
+checkout_lftp_branch() {
+    # This function makes sure that in $REPO_DIR there's the currently
+    # selected branch.
+    # This is the implementation for lftp repositories, where branches are
+    # simple subdirectories
+
+    REPO_DIR=$REPO_DIR/$REPO_BRANCH
+}
+
 checkout_git_branch() {
     # This function makes sure that in $REPO_DIR there's the currently
     # selected branch.
@@ -1055,7 +1064,7 @@ set_repo_vars() {
             REPO_GPG=${REPOSITORIES[$((i + 6))]}
             REPO_DIR=$REPO_ROOT/$REPO_NAME
 
-            if [[ $REPO_TOOL = "rsync" || $REPO_TOOL = "git" ]]; then
+            if [[ $REPO_TOOL = "rsync" || $REPO_TOOL = "git" || $REPO_TOOL = "lftp" ]]; then
                 checkout_${REPO_TOOL}_branch
             fi
 
@@ -2381,6 +2390,36 @@ rsync_command() {
     rm -f $SYNC_LOCK
 }
 
+lftp_command() {
+    # This function holds the lftp command.
+    
+    local SYNC_LOCK=$SBOPKGTMP/sbopkg_sync.lck
+
+	lftp -c mirror -e -n -X *.txz -X *.txz.asc -X *.tar.gz -X *.tar.bz2 -X *.tar.xz -X *.txt $REPO_LINK/ $REPO_DIR
+	
+    rsync --archive --delete --no-owner --exclude="*.sbopkg" \
+        $RSYNCFLAGS $REPO_LINK/ $REPO_DIR/
+    case $? in        
+        0)
+            echo
+            echo "Lftp with the $REPO_DESC complete."
+            echo
+            echo "Importing $REPO_DESC GPG Key..."
+            gpg --quiet --fetch-key http://www.slackbuilds.org/GPG-KEY
+            echo "Import done."
+            echo
+            echo "***SYNC COMPLETE***"
+            ;;
+        *)
+            echo
+            echo "Rsync with the $REPO_DESC failed."
+            echo "Please try again."
+            echo
+            ;;
+    esac
+    rm -f $SYNC_LOCK
+}
+
 git_command() {
     # This function synchronizes a local git repository with upstream.
 
@@ -2431,7 +2470,7 @@ sync_repo() {
         fi
         continue
     fi
-    if [[ $REPO_TOOL != "rsync" && $REPO_TOOL != "git" ]]; then
+    if [[ $REPO_TOOL != "rsync" && $REPO_TOOL != "git" && $REPO_TOOL != "lftp" ]]; then
         if [[ $DIAG ]]; then
             dialog --title "ERROR" --msgbox \
                 "Unsupported fetching tool \"$REPO_TOOL\"." 8 30

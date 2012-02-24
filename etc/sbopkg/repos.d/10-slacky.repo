@@ -1,1 +1,3 @@
-Slacky master "Slacky repository" sl git git://github.com/ilmich/slackybuilds.git@master ""
+SlackyGit master "Slacky repository" sl git git://github.com/ilmich/slackybuilds.git@master ""
+Slacky 13.37-64 "Slacky 13.37 repository 64bit" sl lftp http://repository.slacky.eu/slackware64-13.37 ""
+Slacky 13.37-32 "Slacky 13.37 repository 32bit" sl lftp http://repository.slacky.eu/slackware-13.37 ""
