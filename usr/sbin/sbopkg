@@ -2397,8 +2397,6 @@ lftp_command() {
 
 	lftp -c mirror -e -n -X *.txz -X *.txz.asc -X *.tar.gz -X *.tar.bz2 -X *.tar.xz -X *.txt $REPO_LINK/ $REPO_DIR
 	
-    rsync --archive --delete --no-owner --exclude="*.sbopkg" \
-        $RSYNCFLAGS $REPO_LINK/ $REPO_DIR/
     case $? in        
         0)
             echo
